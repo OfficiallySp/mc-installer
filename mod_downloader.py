@@ -4,17 +4,19 @@ import platform
 import subprocess
 import shutil
 from config import MODRINTH_API_URL, MOD_LIST, FABRIC_INSTALLER_URL
+from logger import logger
 
 class ModNotFoundError(Exception):
     pass
 
 class ModDownloader:
-    def __init__(self, minecraft_version):
+    def __init__(self, minecraft_version, progress_callback=None):
         self.api_url = MODRINTH_API_URL
         self.mod_list = MOD_LIST
         self.minecraft_dir = self.get_minecraft_dir()
         self.download_dir = os.path.join(self.minecraft_dir, 'mods')
         self.minecraft_version = minecraft_version
+        self.progress_callback = progress_callback
 
     def get_minecraft_dir(self):
         system = platform.system()
@@ -26,13 +28,15 @@ class ModDownloader:
             return os.path.expanduser('~/.minecraft')
 
     def download_mods(self):
-        print(f"Downloading mods for Minecraft version: {self.minecraft_version}")
+        logger.info(f"Downloading mods for Minecraft version: {self.minecraft_version}")
         self.install_fabric()
         downloaded_mods = []
         unavailable_mods = []
 
-        for mod_slug in self.mod_list:
+        total_mods = len(self.mod_list)
+        for index, mod_slug in enumerate(self.mod_list):
             try:
+                logger.info(f"Downloading mod: {mod_slug}")
                 # Get project information
                 project_url = f"{self.api_url}/project/{mod_slug}"
                 project_response = requests.get(project_url)
@@ -47,7 +51,7 @@ class ModDownloader:
 
                 if not versions_data:
                     unavailable_mods.append(mod_slug)
-                    print(f"No compatible version found for {mod_slug}")
+                    logger.warning(f"No compatible version found for {mod_slug}")
                     continue
 
                 # Get the latest version
@@ -66,24 +70,23 @@ class ModDownloader:
                     file.write(response.content)
 
                 downloaded_mods.append(file_path)
-                print(f"Downloaded: {file_name}")
+                logger.info(f"Downloaded: {file_name}")
+
+                # Update progress
+                if self.progress_callback:
+                    progress = (index + 1) / total_mods * 75  # 75% of progress bar for mod downloads
+                    self.progress_callback(int(progress))
 
             except requests.RequestException as e:
-                print(f"Error downloading {mod_slug}: {str(e)}")
+                logger.error(f"Error downloading {mod_slug}: {str(e)}")
                 unavailable_mods.append(mod_slug)
 
         if unavailable_mods:
-            print("\nError: Some mods could not be downloaded.")
-            print(f"The following mods are not available for Minecraft {self.minecraft_version}:")
+            logger.warning("\nError: Some mods could not be downloaded.")
+            logger.warning(f"The following mods are not available for Minecraft {self.minecraft_version}:")
             for mod in unavailable_mods:
-                print(f"- {mod}")
-            print("\nPossible reasons:")
-            print("1. The mod hasn't been updated to this Minecraft version yet.")
-            print("2. There might be connectivity issues.")
-            print("\nSuggestions:")
-            print("- Check for updates to these mods")
-            print("- Try again later")
-            print("- Consider using a different Minecraft version")
+                logger.warning(f"- {mod}")
+
             
             self.cleanup_downloads(downloaded_mods)
             return None
@@ -94,14 +97,14 @@ class ModDownloader:
         for mod_path in downloaded_mods:
             try:
                 os.remove(mod_path)
-                print(f"Removed: {mod_path}")
+                logger.info(f"Removed: {mod_path}")
             except OSError as e:
-                print(f"Error removing {mod_path}: {str(e)}")
+                logger.error(f"Error removing {mod_path}: {str(e)}")
         
         # Remove the mods directory if it's empty
         if os.path.exists(self.download_dir) and not os.listdir(self.download_dir):
             shutil.rmtree(self.download_dir)
-            print(f"Removed empty directory: {self.download_dir}")
+            logger.info(f"Removed empty directory: {self.download_dir}")
 
     def install_fabric(self):
         installer_path = os.path.join(self.minecraft_dir, 'fabric-installer.jar')
@@ -117,4 +120,4 @@ class ModDownloader:
         
         # Clean up
         os.remove(installer_path)
-        print("Fabric installed successfully")
+        logger.info("Fabric installed successfully")
