@@ -3,17 +3,18 @@ import os
 import platform
 import subprocess
 import shutil
-from config import MODRINTH_API_URL, MOD_LIST, FABRIC_INSTALLER_URL, MINECRAFT_VERSION
+from config import MODRINTH_API_URL, MOD_LIST, FABRIC_INSTALLER_URL
 
 class ModNotFoundError(Exception):
     pass
 
 class ModDownloader:
-    def __init__(self):
+    def __init__(self, minecraft_version):
         self.api_url = MODRINTH_API_URL
         self.mod_list = MOD_LIST
         self.minecraft_dir = self.get_minecraft_dir()
         self.download_dir = os.path.join(self.minecraft_dir, 'mods')
+        self.minecraft_version = minecraft_version
 
     def get_minecraft_dir(self):
         system = platform.system()
@@ -25,7 +26,7 @@ class ModDownloader:
             return os.path.expanduser('~/.minecraft')
 
     def download_mods(self):
-        print(f"Downloading mods for Minecraft version: {MINECRAFT_VERSION}")
+        print(f"Downloading mods for Minecraft version: {self.minecraft_version}")
         self.install_fabric()
         downloaded_mods = []
         unavailable_mods = []
@@ -39,7 +40,7 @@ class ModDownloader:
                 project_data = project_response.json()
 
                 # Get versions for the specific Minecraft version
-                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{MINECRAFT_VERSION}\"]"
+                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{self.minecraft_version}\"]"
                 versions_response = requests.get(versions_url)
                 versions_response.raise_for_status()
                 versions_data = versions_response.json()
@@ -73,7 +74,7 @@ class ModDownloader:
 
         if unavailable_mods:
             print("\nError: Some mods could not be downloaded.")
-            print(f"The following mods are not available for Minecraft {MINECRAFT_VERSION}:")
+            print(f"The following mods are not available for Minecraft {self.minecraft_version}:")
             for mod in unavailable_mods:
                 print(f"- {mod}")
             print("\nPossible reasons:")
@@ -112,7 +113,7 @@ class ModDownloader:
             file.write(response.content)
 
         # Run Fabric installer
-        subprocess.run(['java', '-jar', installer_path, 'client', '-mcversion', MINECRAFT_VERSION])
+        subprocess.run(['java', '-jar', installer_path, 'client', '-mcversion', self.minecraft_version])
         
         # Clean up
         os.remove(installer_path)

@@ -1,15 +1,24 @@
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QApplication, QMessageBox, QProgressBar
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QApplication, QMessageBox, QProgressBar, QComboBox
 from mod_downloader import ModDownloader
 from profile_manager import ProfileManager
+from config import MINECRAFT_VERSIONS
 
 class InstallerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Minecraft Mod Installer")
-        self.setGeometry(100, 100, 300, 200)
+        self.setGeometry(100, 100, 300, 250)
 
         layout = QVBoxLayout()
         
+        # Minecraft version selector
+        self.version_label = QLabel("Select Minecraft Version:")
+        layout.addWidget(self.version_label)
+        
+        self.version_selector = QComboBox()
+        self.version_selector.addItems(MINECRAFT_VERSIONS)
+        layout.addWidget(self.version_selector)
+
         self.install_button = QPushButton("Install Mods")
         self.install_button.clicked.connect(self.install_mods)
         layout.addWidget(self.install_button)
@@ -24,20 +33,20 @@ class InstallerGUI(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-        self.mod_downloader = ModDownloader()
-        self.profile_manager = ProfileManager()
+        self.profile_manager = ProfileManager(MINECRAFT_VERSIONS[0])  # Use the first version as default
 
     def install_mods(self):
         self.progress_bar.setValue(0)
         self.status_label.setText("Downloading mods...")
         QApplication.processEvents()
 
-        downloader = ModDownloader()
+        selected_version = self.version_selector.currentText()
+        downloader = ModDownloader(minecraft_version=selected_version)
         result = downloader.download_mods()
 
         if result is None:
-            self.show_error_message("Error", 
-                "Some mods may not be available for the selected Minecraft version. or there may be connectivity issues. Please try again later.")
+            self.show_error_message("Mod Download Failed", 
+                "Some mods could not be downloaded. Check the console for details.")
             self.status_label.setText("Installation failed")
             self.progress_bar.setValue(0)
         else:
