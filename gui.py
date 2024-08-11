@@ -28,7 +28,11 @@ class InstallerGUI(QMainWindow):
         layout.addWidget(self.version_label)
 
         self.version_selector = QComboBox()
-        self.version_selector.addItems(MINECRAFT_VERSIONS)
+        for version_info in MINECRAFT_VERSIONS:
+            version = version_info["version"]
+            compatible = ", ".join(version_info["compatible"])
+            display_text = f"{version}" if not compatible else f"{version} (compatible with {compatible})"
+            self.version_selector.addItem(display_text, version)
         layout.addWidget(self.version_selector)
 
         self.install_button = QPushButton("Install Mods")
@@ -58,7 +62,7 @@ class InstallerGUI(QMainWindow):
         self.status_label.setText("Downloading mods...")
         QApplication.processEvents()
 
-        selected_version = self.version_selector.currentText()
+        selected_version = self.version_selector.currentData()
         logger.info(
             f"Starting mod installation for Minecraft version: {selected_version}"
         )
