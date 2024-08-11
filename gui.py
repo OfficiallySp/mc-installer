@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QApplication, QMessageBox, QProgressBar
 from mod_downloader import ModDownloader
 from profile_manager import ProfileManager
 
@@ -17,6 +17,9 @@ class InstallerGUI(QMainWindow):
         self.status_label = QLabel("Ready to install mods.")
         layout.addWidget(self.status_label)
 
+        self.progress_bar = QProgressBar()
+        layout.addWidget(self.progress_bar)
+
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
@@ -25,12 +28,26 @@ class InstallerGUI(QMainWindow):
         self.profile_manager = ProfileManager()
 
     def install_mods(self):
+        self.progress_bar.setValue(0)
         self.status_label.setText("Downloading mods...")
-        self.install_button.setEnabled(False)
-        
-        mods = self.mod_downloader.download_mods()
-        self.profile_manager.create_profile(mods)
-        
-        self.status_label.setText(f"Mods installed successfully to:\n{self.mod_downloader.download_dir}\n"
-                                  f"Profile created at:\n{self.profile_manager.launcher_profiles_path}")
-        self.install_button.setEnabled(True)
+        QApplication.processEvents()
+
+        downloader = ModDownloader()
+        result = downloader.download_mods()
+
+        if result is None:
+            self.show_error_message("Error", 
+                "Some mods may not be available for the selected Minecraft version. or there may be connectivity issues. Please try again later.")
+            self.status_label.setText("Installation failed")
+            self.progress_bar.setValue(0)
+        else:
+            self.status_label.setText("Mods downloaded successfully!")
+            self.progress_bar.setValue(100)
+
+    def show_error_message(self, title, message):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Critical)
+        error_box.setWindowTitle(title)
+        error_box.setText(message)
+        error_box.setStandardButtons(QMessageBox.Ok)
+        error_box.exec_()

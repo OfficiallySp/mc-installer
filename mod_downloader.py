@@ -30,56 +30,62 @@ class ModDownloader:
         downloaded_mods = []
         unavailable_mods = []
 
-        try:
-            for mod_slug in self.mod_list:
-                try:
-                    # Get project information
-                    project_url = f"{self.api_url}/project/{mod_slug}"
-                    project_response = requests.get(project_url)
-                    project_response.raise_for_status()
-                    project_data = project_response.json()
+        for mod_slug in self.mod_list:
+            try:
+                # Get project information
+                project_url = f"{self.api_url}/project/{mod_slug}"
+                project_response = requests.get(project_url)
+                project_response.raise_for_status()
+                project_data = project_response.json()
 
-                    # Get versions for the specific Minecraft version
-                    versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{MINECRAFT_VERSION}\"]"
-                    versions_response = requests.get(versions_url)
-                    versions_response.raise_for_status()
-                    versions_data = versions_response.json()
+                # Get versions for the specific Minecraft version
+                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{MINECRAFT_VERSION}\"]"
+                versions_response = requests.get(versions_url)
+                versions_response.raise_for_status()
+                versions_data = versions_response.json()
 
-                    if not versions_data:
-                        unavailable_mods.append(mod_slug)
-                        raise ModNotFoundError(f"No compatible version found for {mod_slug}")
-
-                    # Get the latest version
-                    latest_version = versions_data[0]
-
-                    # Download the mod file
-                    file_url = latest_version['files'][0]['url']
-                    file_name = latest_version['files'][0]['filename']
-                    file_path = os.path.join(self.download_dir, file_name)
-
-                    response = requests.get(file_url)
-                    response.raise_for_status()
-
-                    os.makedirs(self.download_dir, exist_ok=True)
-                    with open(file_path, 'wb') as file:
-                        file.write(response.content)
-
-                    downloaded_mods.append(file_path)
-                    print(f"Downloaded: {file_name}")
-
-                except (requests.RequestException, ModNotFoundError) as e:
-                    print(f"Error downloading {mod_slug}: {str(e)}")
+                if not versions_data:
                     unavailable_mods.append(mod_slug)
-                    raise
+                    print(f"No compatible version found for {mod_slug}")
+                    continue
 
-        except Exception:
-            # Clean up downloaded mods
-            self.cleanup_downloads(downloaded_mods)
+                # Get the latest version
+                latest_version = versions_data[0]
+
+                # Download the mod file
+                file_url = latest_version['files'][0]['url']
+                file_name = latest_version['files'][0]['filename']
+                file_path = os.path.join(self.download_dir, file_name)
+
+                response = requests.get(file_url)
+                response.raise_for_status()
+
+                os.makedirs(self.download_dir, exist_ok=True)
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+
+                downloaded_mods.append(file_path)
+                print(f"Downloaded: {file_name}")
+
+            except requests.RequestException as e:
+                print(f"Error downloading {mod_slug}: {str(e)}")
+                unavailable_mods.append(mod_slug)
+
+        if unavailable_mods:
+            print("\nError: Some mods could not be downloaded.")
+            print(f"The following mods are not available for Minecraft {MINECRAFT_VERSION}:")
+            for mod in unavailable_mods:
+                print(f"- {mod}")
+            print("\nPossible reasons:")
+            print("1. The mod hasn't been updated to this Minecraft version yet.")
+            print("2. There might be connectivity issues.")
+            print("\nSuggestions:")
+            print("- Check for updates to these mods")
+            print("- Try again later")
+            print("- Consider using a different Minecraft version")
             
-            error_message = f"The following mods are not available for Minecraft {MINECRAFT_VERSION}: {', '.join(unavailable_mods)}"
-            print(error_message)
-            print("Some mods haven't been updated yet. Please check for updates or choose a different Minecraft version.")
-            raise ModNotFoundError(error_message)
+            self.cleanup_downloads(downloaded_mods)
+            return None
 
         return downloaded_mods
 
