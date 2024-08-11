@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QApplication, QMessageBox, QProgressBar, QComboBox
 from mod_downloader import ModDownloader
+from profile_manager import ProfileManager
 from config import MINECRAFT_VERSIONS
 
 class InstallerGUI(QMainWindow):
@@ -32,6 +33,8 @@ class InstallerGUI(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+        self.profile_manager = ProfileManager(MINECRAFT_VERSIONS[0])  # Use the first version as default
+
     def install_mods(self):
         self.progress_bar.setValue(0)
         self.status_label.setText("Downloading mods...")
@@ -48,6 +51,13 @@ class InstallerGUI(QMainWindow):
             self.progress_bar.setValue(0)
         else:
             self.status_label.setText("Mods downloaded successfully!")
+            self.progress_bar.setValue(75)
+            
+            # Create the profile
+            self.profile_manager = ProfileManager(selected_version)
+            self.profile_manager.create_profile(result)
+            
+            self.status_label.setText("Profile created successfully!")
             self.progress_bar.setValue(100)
 
     def show_error_message(self, title, message):

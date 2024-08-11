@@ -113,7 +113,7 @@ class ModDownloader:
             file.write(response.content)
 
         # Run Fabric installer
-        subprocess.run(['java', '-jar', installer_path, 'client', '-mcversion', self.minecraft_version])
+        subprocess.run(['java', '-jar', installer_path, 'client', '-noprofile', '-mcversion', self.minecraft_version])
         
         # Clean up
         os.remove(installer_path)
