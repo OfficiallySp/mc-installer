@@ -43,8 +43,8 @@ class ModDownloader:
                 project_response.raise_for_status()
                 project_data = project_response.json()
 
-                # Get versions for the specific Minecraft version
-                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{self.minecraft_version}\"]"
+                # Get versions for the specific Minecraft version and Fabric loader
+                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{self.minecraft_version}\"]&loaders=[\"fabric\"]"
                 versions_response = requests.get(versions_url)
                 versions_response.raise_for_status()
                 versions_data = versions_response.json()
