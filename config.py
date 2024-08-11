@@ -1,8 +1,37 @@
 MODRINTH_API_URL = "https://api.modrinth.com/v2"
 MOD_LIST = [
+    # base mods
+    "fabric-api",
+    "cloth-config",
     "sodium",
+    "nvidium",
     "lithium",
+    "indium",
+    "ferrite-core",
+    "immediatelyfast",
+    "modernfix",
+    "moreculling",
+    "ebe",
+
+    # optional
+    "sodium-extra",
     "iris",
+    "debugify",
+    "language-reload",
+    "betterf3",
+
+    # optifine replacements
+    "animatica",
+    "optigui",
+    "ryoamiclights",
+    "fabricbettergrass",
+    "capes",
+    "ok-zoomer",
+    "continuity",
+    "entitytexturefeatures",
+    "entity-model-features",
+    "polytone",
+    "puzzle"
     # Add more mod slugs as needed
 ]
 MINECRAFT_VERSIONS = [
