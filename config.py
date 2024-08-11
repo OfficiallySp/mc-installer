@@ -25,9 +25,7 @@ MINECRAFT_VERSIONS = [
     "1.18",
     "1.17.1",
     "1.17",
-    "1.16.5",
-    "1.16.4",
-    "1.16.3"
+    "1.16.5"
     # Add more versions as needed
 ]
 MINECRAFT_VERSION = MINECRAFT_VERSIONS[0]  # Default to the first version in the list

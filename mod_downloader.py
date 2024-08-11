@@ -25,13 +25,13 @@ class ModDownloader:
         else:  # Linux and others
             return os.path.expanduser('~/.minecraft')
 
-    def download_mods(self, selected_mods):
+    def download_mods(self):
         print(f"Downloading mods for Minecraft version: {self.minecraft_version}")
         self.install_fabric()
         downloaded_mods = []
         unavailable_mods = []
 
-        for mod_slug in selected_mods:
+        for mod_slug in self.mod_list:
             try:
                 # Get project information
                 project_url = f"{self.api_url}/project/{mod_slug}"
