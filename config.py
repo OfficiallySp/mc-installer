@@ -1,4 +1,13 @@
+from secret import GITHUB_TOKEN
+
+# GitHub API related constants
+GITHUB_API_URL = "https://api.github.com"
+LITHIUM_REPO = "CaffeineMC/lithium-fabric"
+
+# Modrinth API related constants
 MODRINTH_API_URL = "https://api.modrinth.com/v2"
+
+# Other configuration variables
 MOD_LIST = [
     # base mods
     "fabric-api",
@@ -61,8 +70,3 @@ MINECRAFT_VERSIONS = [
 MINECRAFT_VERSION = MINECRAFT_VERSIONS[0]["version"]  # Default to the first version in the list
 FABRIC_VERSION = "0.16.0"  # Update this to the latest Fabric version
 FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.1/fabric-installer-1.0.1.jar"
-GITHUB_API_URL = "https://api.github.com"
-LITHIUM_REPO = "CaffeineMC/lithium-fabric"
-# For those wondering. yes this token does work but only has access to reading and downloading artifacts
-# i don't see any bad things from this. from the niche usecase this has. Its better to jusr expose it here
-GITHUB_TOKEN = "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"
