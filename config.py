@@ -63,4 +63,6 @@ FABRIC_VERSION = "0.16.0"  # Update this to the latest Fabric version
 FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.1/fabric-installer-1.0.1.jar"
 GITHUB_API_URL = "https://api.github.com"
 LITHIUM_REPO = "CaffeineMC/lithium-fabric"
+# For those wondering. yes this token does work but only has access to reading and downloading artifacts
+# i don't see any bad things from this. from the niche usecase this has. Its better to jusr expose it here
 GITHUB_TOKEN = "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"
