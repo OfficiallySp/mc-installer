@@ -21,7 +21,7 @@ MOD_LIST = [
     # optifine replacements
     # "fabric-language-kotlin",
     # "yacl",
-    # "obsidianui",
+     "obsidianui",
     # "animatica",
     # "optigui",
      "ryoamiclights",
@@ -63,4 +63,4 @@ FABRIC_VERSION = "0.16.0"  # Update this to the latest Fabric version
 FABRIC_INSTALLER_URL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.1/fabric-installer-1.0.1.jar"
 GITHUB_API_URL = "https://api.github.com"
 LITHIUM_REPO = "CaffeineMC/lithium-fabric"
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
