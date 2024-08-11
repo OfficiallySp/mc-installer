@@ -3,29 +3,32 @@ import os
 import platform
 import subprocess
 import shutil
-from config import MODRINTH_API_URL, MOD_LIST, FABRIC_INSTALLER_URL
+from config import MODRINTH_API_URL, MOD_LIST, FABRIC_INSTALLER_URL, FABRIC_VERSION
 from logger import logger
+
 
 class ModNotFoundError(Exception):
     pass
+
 
 class ModDownloader:
     def __init__(self, minecraft_version, progress_callback=None):
         self.api_url = MODRINTH_API_URL
         self.mod_list = MOD_LIST
         self.minecraft_dir = self.get_minecraft_dir()
-        self.download_dir = os.path.join(self.minecraft_dir, 'mods')
+        self.download_dir = os.path.join(self.minecraft_dir, "mods")
         self.minecraft_version = minecraft_version
         self.progress_callback = progress_callback
+        self.loader_version = FABRIC_VERSION
 
     def get_minecraft_dir(self):
         system = platform.system()
         if system == "Windows":
-            return os.path.join(os.getenv('APPDATA'), '.minecraft')
+            return os.path.join(os.getenv("APPDATA"), ".minecraft")
         elif system == "Darwin":  # macOS
-            return os.path.expanduser('~/Library/Application Support/minecraft')
+            return os.path.expanduser("~/Library/Application Support/minecraft")
         else:  # Linux and others
-            return os.path.expanduser('~/.minecraft')
+            return os.path.expanduser("~/.minecraft")
 
     def download_mods(self):
         logger.info(f"Downloading mods for Minecraft version: {self.minecraft_version}")
@@ -44,7 +47,7 @@ class ModDownloader:
                 project_data = project_response.json()
 
                 # Get versions for the specific Minecraft version and Fabric loader
-                versions_url = f"{self.api_url}/project/{mod_slug}/version?game_versions=[\"{self.minecraft_version}\"]&loaders=[\"fabric\"]"
+                versions_url = f'{self.api_url}/project/{mod_slug}/version?game_versions=["{self.minecraft_version}"]&loaders=["fabric"]'
                 versions_response = requests.get(versions_url)
                 versions_response.raise_for_status()
                 versions_data = versions_response.json()
@@ -58,15 +61,15 @@ class ModDownloader:
                 latest_version = versions_data[0]
 
                 # Download the mod file
-                file_url = latest_version['files'][0]['url']
-                file_name = latest_version['files'][0]['filename']
+                file_url = latest_version["files"][0]["url"]
+                file_name = latest_version["files"][0]["filename"]
                 file_path = os.path.join(self.download_dir, file_name)
 
                 response = requests.get(file_url)
                 response.raise_for_status()
 
                 os.makedirs(self.download_dir, exist_ok=True)
-                with open(file_path, 'wb') as file:
+                with open(file_path, "wb") as file:
                     file.write(response.content)
 
                 downloaded_mods.append(file_path)
@@ -74,7 +77,7 @@ class ModDownloader:
 
                 # Update progress
                 if self.progress_callback:
-                    progress = (index + 1) / total_mods * 75  # 75% of progress bar for mod downloads
+                    progress = (index + 1) / total_mods * 75
                     self.progress_callback(int(progress))
 
             except requests.RequestException as e:
@@ -83,11 +86,12 @@ class ModDownloader:
 
         if unavailable_mods:
             logger.warning("\nError: Some mods could not be downloaded.")
-            logger.warning(f"The following mods are not available for Minecraft {self.minecraft_version}:")
+            logger.warning(
+                f"The following mods are not available for Minecraft {self.minecraft_version}:"
+            )
             for mod in unavailable_mods:
                 logger.warning(f"- {mod}")
 
-            
             self.cleanup_downloads(downloaded_mods)
             return None
 
@@ -100,24 +104,43 @@ class ModDownloader:
                 logger.info(f"Removed: {mod_path}")
             except OSError as e:
                 logger.error(f"Error removing {mod_path}: {str(e)}")
-        
+
         # Remove the mods directory if it's empty
         if os.path.exists(self.download_dir) and not os.listdir(self.download_dir):
             shutil.rmtree(self.download_dir)
             logger.info(f"Removed empty directory: {self.download_dir}")
 
+        # Remove Fabric
+        fabric_version = f"fabric-loader-{FABRIC_VERSION}-{self.minecraft_version}"
+        fabric_dir = os.path.join(self.minecraft_dir, "versions", fabric_version)
+        if os.path.exists(fabric_dir):
+            shutil.rmtree(fabric_dir)
+            logger.info(f"Removed Fabric: {fabric_dir}")
+
     def install_fabric(self):
-        installer_path = os.path.join(self.minecraft_dir, 'fabric-installer.jar')
-        
+        installer_path = os.path.join(self.minecraft_dir, "fabric-installer.jar")
+
         # Download Fabric installer
         response = requests.get(FABRIC_INSTALLER_URL)
         response.raise_for_status()
-        with open(installer_path, 'wb') as file:
+        with open(installer_path, "wb") as file:
             file.write(response.content)
 
         # Run Fabric installer
-        subprocess.run(['java', '-jar', installer_path, 'client', '-noprofile', '-mcversion', self.minecraft_version])
-        
+        subprocess.run(
+            [
+                "java",
+                "-jar",
+                installer_path,
+                "client",
+                "-noprofile",
+                "-loader",
+                self.loader_version,
+                "-mcversion",
+                self.minecraft_version,
+            ]
+        )
+
         # Clean up
         os.remove(installer_path)
         logger.info("Fabric installed successfully")

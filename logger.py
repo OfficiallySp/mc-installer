@@ -1,8 +1,9 @@
 import logging
 import os
 
-def setup_logger(log_file='mcinstaller.log'):
-    logger = logging.getLogger('mcinstaller')
+
+def setup_logger(log_file="mcinstaller.log"):
+    logger = logging.getLogger("mcinstaller")
     logger.setLevel(logging.DEBUG)
 
     # Create file handler
@@ -14,7 +15,9 @@ def setup_logger(log_file='mcinstaller.log'):
     ch.setLevel(logging.INFO)
 
     # Create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 
@@ -23,5 +26,6 @@ def setup_logger(log_file='mcinstaller.log'):
     logger.addHandler(ch)
 
     return logger
+
 
 logger = setup_logger()

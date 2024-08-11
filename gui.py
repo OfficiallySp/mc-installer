@@ -1,8 +1,19 @@
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QApplication, QMessageBox, QProgressBar, QComboBox
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+    QLabel,
+    QApplication,
+    QMessageBox,
+    QProgressBar,
+    QComboBox,
+)
 from mod_downloader import ModDownloader
 from profile_manager import ProfileManager
 from config import MINECRAFT_VERSIONS
 from logger import logger
+
 
 class InstallerGUI(QMainWindow):
     def __init__(self):
@@ -11,11 +22,11 @@ class InstallerGUI(QMainWindow):
         self.setGeometry(100, 100, 300, 250)
 
         layout = QVBoxLayout()
-        
+
         # Minecraft version selector
         self.version_label = QLabel("Select Minecraft Version:")
         layout.addWidget(self.version_label)
-        
+
         self.version_selector = QComboBox()
         self.version_selector.addItems(MINECRAFT_VERSIONS)
         layout.addWidget(self.version_selector)
@@ -34,7 +45,9 @@ class InstallerGUI(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-        self.profile_manager = ProfileManager(MINECRAFT_VERSIONS[0])  # Use the first version as default
+        self.profile_manager = ProfileManager(
+            MINECRAFT_VERSIONS[0]
+        )  # Use the first version as default
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
@@ -46,14 +59,20 @@ class InstallerGUI(QMainWindow):
         QApplication.processEvents()
 
         selected_version = self.version_selector.currentText()
-        logger.info(f"Starting mod installation for Minecraft version: {selected_version}")
+        logger.info(
+            f"Starting mod installation for Minecraft version: {selected_version}"
+        )
 
-        downloader = ModDownloader(minecraft_version=selected_version, progress_callback=self.update_progress)
+        downloader = ModDownloader(
+            minecraft_version=selected_version, progress_callback=self.update_progress
+        )
         result = downloader.download_mods()
 
         if result is None:
-            self.show_error_message("Mod Download Failed", 
-                "Some mods could not be downloaded. They may not be compatible with this version of Minecraft yet, or there may be connectivity issues. Check the log file for details.")
+            self.show_error_message(
+                "Mod Download Failed",
+                "Some mods could not be downloaded. They may not be compatible with this version of Minecraft yet, or there may be connectivity issues. Check the log file for details.",
+            )
             self.status_label.setText("Installation failed")
             self.progress_bar.setValue(0)
             logger.error("Mod installation failed")
@@ -61,11 +80,11 @@ class InstallerGUI(QMainWindow):
             self.status_label.setText("Mods downloaded successfully!")
             self.progress_bar.setValue(75)
             logger.info("Mods downloaded successfully")
-            
+
             # Create the profile
             self.profile_manager = ProfileManager(selected_version)
             self.profile_manager.create_profile(result)
-            
+
             self.status_label.setText("Profile created successfully!")
             self.progress_bar.setValue(100)
             logger.info("Profile created successfully")
