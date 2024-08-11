@@ -21,6 +21,9 @@ MOD_LIST = [
     "betterf3",
 
     # optifine replacements
+    "fabric-language-kotlin",
+    "yacl",
+    "obsidianui",
     "animatica",
     "optigui",
     "ryoamiclights",
