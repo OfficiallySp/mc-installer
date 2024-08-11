@@ -65,4 +65,4 @@ GITHUB_API_URL = "https://api.github.com"
 LITHIUM_REPO = "CaffeineMC/lithium-fabric"
 # For those wondering. yes this token does work but only has access to reading and downloading artifacts
 # i don't see any bad things from this. from the niche usecase this has. Its better to jusr expose it here
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
